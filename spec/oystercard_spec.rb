@@ -23,6 +23,9 @@ describe Oystercard do
   end
   describe '#touch_in' do
     it { is_expected.to respond_to(:touch_in)}
+    it 'doesn\'t allow travel if balance lower than £1' do
+      expect{ subject.touch_in}.to raise_error "Insufficient funds. Please top up"
+    end
   end
   describe '#touch_out' do
     it { is_expected.to respond_to(:touch_out)}
@@ -33,10 +36,12 @@ describe Oystercard do
       expect(subject).not_to be_in_journey
     end
     it 'it can touch in' do
+      subject.top_up(1)
       subject.touch_in
       expect(subject).to be_in_journey
     end
     it "can touch out" do
+      subject.top_up(1)
       subject.touch_in
       subject.touch_out
       expect(subject).not_to be_in_journey
