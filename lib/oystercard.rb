@@ -10,4 +10,7 @@ class Oystercard
     fail "£#{MAXIMUM_BALANCE} limit" if (@balance + sum) > MAXIMUM_BALANCE
     @balance += sum
   end
+  def deduct(fare)
+    @balance -= fare
+  end
 end
