@@ -2,10 +2,10 @@ require 'oystercard'
 
 describe Oystercard do  
 
-  let(:entry_station) { double :entry_station }
-
-
   subject(:oystercard) { described_class.new }
+  let(:entry_station) { double :entry_station }
+  let(:exit_station) { double :exit_station}
+  let(:journey) { {entry_station: entry_station, exit_station: exit_station} }
 
   it 'checks if no money on card' do
     expect(oystercard.balance).to eq(0)
@@ -54,13 +54,13 @@ describe Oystercard do
       minimum_fare = Oystercard::MINIMUM_FARE
       oystercard.top_up(5)
       oystercard.touch_in(entry_station)
-      expect { oystercard.touch_out }.to change{ oystercard.balance }.by(-minimum_fare)
+      expect { oystercard.touch_out(exit_station) }.to change{ oystercard.balance }.by(-minimum_fare)
     end
 
     it 'forgets the entry station' do
       oystercard.top_up(5)
       oystercard.touch_in(entry_station)
-      oystercard.touch_out
+      oystercard.touch_out(exit_station)
       expect(oystercard.entry_station).to eq nil
     end
 
@@ -79,8 +79,20 @@ describe Oystercard do
     it "can touch out" do
       oystercard.top_up(1)
       oystercard.touch_in(entry_station)
-      oystercard.touch_out
+      oystercard.touch_out(exit_station)
       expect(oystercard).not_to be_in_journey
     end
+
+    it "returns and empty list" do
+      expect(oystercard.journeys).to be_empty
+    end
+
+    it "can store a journey" do
+      oystercard.top_up(5)
+      oystercard.touch_in(entry_station)
+      oystercard.touch_out(exit_station)
+      expect(oystercard.journeys).to include journey
+    end
+
   end
 end 
