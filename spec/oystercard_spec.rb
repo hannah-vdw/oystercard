@@ -1,6 +1,10 @@
 require 'oystercard'
 
 describe Oystercard do  
+
+  let(:entry_station) { double :entry_station }
+
+
   subject(:oystercard) { described_class.new }
 
   it 'checks if no money on card' do
@@ -26,12 +30,22 @@ describe Oystercard do
   #   expect{ oystercard.deduct 1 }.to change{ oystercard.balance }.by -1
   # end
 
-  # describe '#touch_in' do
-  #   it { is_expected.to respond_to(:touch_in)}
-  #   it 'doesn\'t allow travel if balance lower than £1' do
-  #     expect{ oystercard.touch_in}.to raise_error "Insufficient funds. Please top up"
-  #   end
-  # end
+  describe '#touch_in' do
+
+    it { is_expected.to respond_to(:touch_in)}
+
+    it 'doesn\'t allow travel if balance lower than £1' do
+      expect{ oystercard.touch_in(entry_station)}.to raise_error "Insufficient funds. Please top up"
+    end
+
+    it 'remembers the entry station' do
+      oystercard.top_up(5)
+      oystercard.touch_in(entry_station)
+      expect(oystercard.entry_station).to eq entry_station
+      # expect(oystercard.touch_in(entry_station)).to be_in_journey
+    end
+
+  end
 
   describe '#touch_out' do
     it { is_expected.to respond_to(:touch_out)}
@@ -39,8 +53,15 @@ describe Oystercard do
     it 'deducts fare' do
       minimum_fare = Oystercard::MINIMUM_FARE
       oystercard.top_up(5)
-      oystercard.touch_in
+      oystercard.touch_in(entry_station)
       expect { oystercard.touch_out }.to change{ oystercard.balance }.by(-minimum_fare)
+    end
+
+    it 'forgets the entry station' do
+      oystercard.top_up(5)
+      oystercard.touch_in(entry_station)
+      oystercard.touch_out
+      expect(oystercard.entry_station).to eq nil
     end
 
   end
@@ -52,12 +73,12 @@ describe Oystercard do
     end
     it 'it can touch in' do
       oystercard.top_up(1)
-      oystercard.touch_in
+      oystercard.touch_in(entry_station)
       expect(oystercard).to be_in_journey
     end
     it "can touch out" do
       oystercard.top_up(1)
-      oystercard.touch_in
+      oystercard.touch_in(entry_station)
       oystercard.touch_out
       expect(oystercard).not_to be_in_journey
     end
